@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="testStubFlow" doc:id="e23e993e-55f7-454d-9d65-e0cde91e4364" >
+		<http:listener doc:name="Listener" doc:id="6bb28311-2a49-4f0b-8cdc-5f9bae882bf2" config-ref="TestStub_HTTP_Listener_config" path="/test"/>
+		<logger level="INFO" doc:name="Logger" doc:id="97b143a1-b856-43c7-9a17-ddf213edf3d5" message="#[message]"/>
+		<choice doc:name="Choice" doc:id="bdb67137-c43d-4b0c-9ee2-c02f4dc5c587" >
+			<when expression="#[isEmpty(attributes.queryParams['ID'])]">
+				<http:request method="GET" doc:name="Request" doc:id="197d5f53-328d-4a5b-b0f2-383965c3af08" config-ref="TestStub_HTTP_Request_configuration" path="/accounts">
+					<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Requester-ID" : attributes.headers['Requester-ID'],
+	"authorization" : attributes.headers['authorization']
+}]]]></http:headers>
+					<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"type" : attributes.queryParams['type']
+}]]]></http:query-params>
+				</http:request>
+				<logger level="INFO" doc:name="Logger" doc:id="46229625-751c-4470-b33d-3b8db5edb763" message="#[payload]"/>
+			</when>
+			<otherwise >
+				<http:request method="GET" doc:name="Request" doc:id="6af84df8-c7df-4212-9672-3d4865c7c781" config-ref="TestStub_HTTP_Request_configuration" path="/accounts/{ID}">
+										<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Requester-ID" : attributes.headers['Requester-ID'],
+	"authorization" : attributes.headers['authorization']
+}]]]></http:headers>
+					<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"ID" : attributes.queryParams['ID']
+}]]]></http:uri-params>
+					<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"type" : attributes.queryParams['type']
+}]]]></http:query-params>
+				</http:request>
+				<logger level="INFO" doc:name="Logger" doc:id="f8b82c95-428b-4954-88cc-5c5e05e61099" message="#[payload]"/>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

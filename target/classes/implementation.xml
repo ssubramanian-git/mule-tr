@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="getCustomerAccountDetails" doc:id="0f520e3a-2cca-497a-bb12-f449e208924c" >
+		<db:select doc:name="getCustAcctDetails" doc:id="41fea95e-ed33-4f71-aa3b-013461908e65" config-ref="Database_Config">
+			<db:sql >select * from flights_customers where accountType = :type</db:sql>
+			<db:input-parameters ><![CDATA[#[{'type': attributes.queryParams['type']}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="1416aab8-962b-493f-8cf9-cce7f16b2956" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[payload map {
+	id: $.accountID,
+	firstName: splitBy($.name," ")[0],
+	lastName: splitBy($.name," ")[1],
+	address: joinBy([$.street,$.city,$.state],","),
+	postal: $.postal,
+	country: $.country,
+	creationDate: $.creationDate,
+	accountType: $.accountType,
+	miles: $.miles
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="af864b28-7039-43c2-80e1-06dc9c72024e" message="#[payload]"/>
+	</flow>
+	<flow name="getCustomerAccountDetailsbyID" doc:id="0e1cbebe-812f-48da-bc7e-165508fa5f95" >
+		<db:select doc:name="getCustAcctDetailsbyID" doc:id="24b09967-5d7a-4f92-b674-15744a57c393" config-ref="Database_Config" >
+			<db:sql >select * from flights_customers where accountID = :ID</db:sql>
+			<db:input-parameters ><![CDATA[#[{'ID': attributes.uriParams.'ID'}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="8c9f6443-42a3-48c6-93da-b2eacd3d1201" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	id: $.accountID,
+	firstName: splitBy($.name," ")[0],
+	lastName: splitBy($.name," ")[1],
+	address: joinBy([$.street,$.city,$.state],","),
+	postal: $.postal,
+	country: $.country,
+	creationDate: $.creationDate,
+	accountType: $.accountType,
+	miles: $.miles
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="050f5721-b147-4953-9fc2-64deb5a90c99" message="#[payload]" />
+	</flow>
+</mule>

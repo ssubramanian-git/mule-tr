@@ -1,0 +1,185 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/c2c6c9e9-3128-450f-82fa-7fe11e235dfb/ # 
+version: v1
+title: cust-accounts-api
+
+types:
+  account: !include schemas/accountDT.raml
+  accountNoID: !include schemas/accountNoIDDT.raml
+
+traits:
+  jwt:
+    headers:
+      authorization:
+        description: Bearer 
+        type: string
+    responses:
+      400:
+        description: Token was not provided.
+      401:
+        description: Bad or expired token. To fix, you should re-authenticate the user.
+      403:
+        description: The client id validation failed.
+      503:
+        description: Error communicating with JWKS server.
+
+/accounts:
+  description: The account API is a System API designed to fetch Customer Account details from database.
+
+  get:
+    is: [jwt]
+    description: The get method will require a mandatory Requester-ID to be populated in the header. It also requires a mandatory query parameter type and optional parameters - name and country. 
+    headers:
+      Requester-ID:
+        description: The field helps identify the person in the organization making account requests.
+        required: true
+        type: string
+        minLength: 5
+        maxLength: 10
+    queryParameters:
+      type:
+        description: The type query parameter is used to return records that match that account's type.
+        required: true
+        type: string
+        enum: ["personal", "business"]
+      name:
+        description: The name query parameter value is used to filter and return all account records for a particular account owner.
+        required: false
+        type: string
+      country:
+        description: The country query parameter value is used to filter and return records matching the account owner's country of residence.
+        required: false
+        type: string
+    responses:
+      200:
+        body:
+          application/json:
+            type: account[]
+            examples: !include examples/accountsExample.raml
+      400:
+        body:
+          application/json:
+            example: {
+              "message": "Error retrieving details from database."
+              }
+  /{ID}:
+    get:
+      is: [jwt]
+      description: The get method will require a mandatory Requester-ID to be populated in the header. It also requires a mandatory query parameter type and optional parameters - name and country. 
+      headers:
+        Requester-ID:
+          description: The field helps identify the person in the organization making account requests.
+          required: true
+          type: string
+          minLength: 5
+          maxLength: 10
+      queryParameters:
+        type:
+          description: The type query parameter is used to return records that match that account's type.
+          required: true
+          type: string
+          enum: ["personal", "business"]
+      responses:
+        200:
+          body:
+            application/json:
+              type: account[]
+              examples: !include examples/accountsExample.raml
+        400:
+          body:
+            application/json:
+              example: {
+                "message": "Error retrieving details from database."
+                }
+    post:
+      is: jwt
+      description: The post method will require a mandatory Requester-ID to be populated in the header. 
+      headers:
+        Requester-ID:
+          description: The field helps identify the person in the organization making account requests.
+          required: true
+          type: string
+          minLength: 5
+          maxLength: 10
+      body:
+        application/json:
+          type: accountNoID
+          examples: !include examples/accountNoIDExample.raml
+      responses:
+        200:
+          body:
+            application/json:
+              example: {"message": "Account replaced (but not really)."}
+        400:
+          body:
+            application/json:
+              example: {"message": "Error retrieving details from database."}
+    patch:
+      is: jwt
+      description: The patch method will require a mandatory Requester-ID to be populated in the header. 
+      headers:
+        Requester-ID:
+          description: The field helps identify the person in the organization making account requests.
+          required: true
+          type: string
+          minLength: 5
+          maxLength: 10
+      body:
+        application/json:
+          type: accountNoID
+          examples: !include examples/accountNoIDExample.raml
+      responses:
+        200:
+          body:
+            application/json:
+              example: {"message": "Account modified (but not really)."}
+        400:
+          body:
+            application/json:
+              example: {"message": "Error retrieving details from database."}
+    delete:
+      is: jwt
+      description: The patch method will require a mandatory Requester-ID to be populated in the header. 
+      headers:
+        Requester-ID:
+          description: The field helps identify the person in the organization making account requests.
+          required: true
+          type: string
+          minLength: 5
+          maxLength: 10
+      body:
+        application/json:
+          type: accountNoID
+          examples: !include examples/accountNoIDExample.raml
+      responses:
+        200:
+          body:
+            application/json:
+              example: {"message": "Account deleted (but not really)."}
+        400:
+          body:
+            application/json:
+              example: {"message": "Error retrieving details from database."}
+  post:
+    is: jwt
+    description: The post method will require a mandatory Requester-ID to be populated in the header. 
+    headers:
+      Requester-ID:
+        description: The field helps identify the person in the organization making account requests.
+        required: true
+        type: string
+        minLength: 5
+        maxLength: 10
+    body:
+      application/json:
+        type: accountNoID[]
+        examples: !include examples/accountsNoIDExample.raml
+    responses:
+      200:
+        body:
+          application/json:
+            example: {"message": "Account created (but not really)."}
+      400:
+        body:
+          application/json:
+            example: {"message": "Error retrieving details from database."}
